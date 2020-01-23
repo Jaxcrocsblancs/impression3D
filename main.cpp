@@ -17,6 +17,11 @@ void header(FILE* file){
  
 }
 
+float compute_e(float length, float tau = 0.2,float nw = 0.4, float d = 1.75){
+
+return(tau * nw * length /(M_PI * (d*d)/4));
+}
+
 void footer(FILE* file, float z){
     fprintf(file, "G1 X0.0 Y200.0 Z%.2f F1200\n", (z+20.0)); 
 }
@@ -199,11 +204,18 @@ int cylinderPlein(){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
 	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
-
+		
+	float X_a = X;
+	float Y_a = Y;
+	float norm = 0;
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
-	  E+=0.05;
+	  //E+=0.05;
+	  norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+	  E += (compute_e(norm));
+	  X_a = X;
+		Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
@@ -217,11 +229,17 @@ int cylinderPlein(){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
 	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
-      
+  float X_a = X;
+	float Y_a = Y;
+	float norm = 0;
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
-	  E+=0.05;
+	  //E+=0.05;
+		norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+	  E += (compute_e(norm));
+	  X_a = X;
+		Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
