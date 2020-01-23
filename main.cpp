@@ -58,7 +58,7 @@ int cubeN(){
       fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f \n", X,Y,Z,E);
     }
   }
-   footer(file,Z);
+  footer(file,Z);
   fclose(file);
   return 0;
 }
@@ -199,7 +199,6 @@ int cylinderPlein(){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
 	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
-
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
@@ -232,7 +231,34 @@ int cylinderPlein(){
   return 0;
 }
 
+int hemisphereVide(){
+  FILE* file = NULL;
+  file = fopen("hemisphereVide.gcode", "w+");
+  if (file == NULL){
+    // On affiche un message d'erreur si on veut
+    printf("Impossible d'ouvrir le fichier test1.txt");
+    return 1;
+  }
+  header(file);
+  float X = 100.0;
+  float Y = 80.0;
+  float Z = 0.2;
+  float E = 0;
+  fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
+  float radius = 20.0;
+  float r = radius * cos(asin(Z-0.2));
 
+  for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
+    X = xcenter + rad*cos(theta);
+    Y = ycenter + rad*sin(theta);
+    E+=0.05;
+    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
+  }
+  
+  footer(file,Z);
+  fclose(file);
+  return 0;
+}
 
 
 int main( int argc, char** argv )
