@@ -17,6 +17,11 @@ void header(FILE* file){
  
 }
 
+float compute_e(float length, float tau = 0.2,float nw = 0.4, float d = 1.75){
+
+return(tau * nw * length /(M_PI * (d*d)/4));
+}
+
 void footer(FILE* file, float z){
     fprintf(file, "G1 X0.0 Y200.0 Z%.2f F1200\n", (z+20.0)); 
 }
@@ -198,11 +203,18 @@ int cylinderPlein(){
       for(float radius = 0.2; radius<4; radius+=0.2){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
-	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);	
+	float X_a = X;
+	float Y_a = Y;
+	float norm = 0;
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
-	  E+=0.05;
+	  //E+=0.05;
+	  norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+	  E += (compute_e(norm));
+	  X_a = X;
+		Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
@@ -216,11 +228,17 @@ int cylinderPlein(){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
 	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
-      
+  float X_a = X;
+	float Y_a = Y;
+	float norm = 0;
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
-	  E+=0.05;
+	  //E+=0.05;
+		norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+	  E += (compute_e(norm));
+	  X_a = X;
+		Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
@@ -246,13 +264,113 @@ int hemisphereVide(){
   float E = 0;
   fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
   float radius = 20.0;
-  float r = radius * cos(asin(Z-0.2));
+  float r;
+  float X_a;
+  float Y_a;
+  float norm;
+  int xcenter=100;
+  int ycenter=100;
+  int sens =0;
+ 
+  
+  for(Z = 0.2; Z<radius; Z+=0.2){
+    r = radius * cos(asin((Z-0.2)/radius));
+    
+    X_a = xcenter + r*cos(0);
+    Y_a = ycenter + r*sin(0);
+    for(double theta=0.0; theta<6.27; theta+=1.0/r) {
+      X = xcenter + r*cos(theta);
+      Y = ycenter + r*sin(theta);
+      norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+      E += (compute_e(norm));
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
+      X_a = X;
+      Y_a = Y;
+    }
+    r-=0.1;
+    for(double theta=0.0; theta<6.27; theta+=1.0/r) {
+      X = xcenter + r*cos(theta);
+      Y = ycenter + r*sin(theta);
+      norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+      E += (compute_e(norm));
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
+      X_a = X;
+      Y_a = Y;
+    }
+    int nbpassage = 0;
+    
+    if(sens%2==0){
+      float Y1,Y2;
+      for(float nb = 0.0; nb<(r*2); nb+=0.8){
+	X_a=X;
+	X-=0.8;
+	float k=(X-xcenter)/r;
+	Y1=-r*sin(acos(k))+ycenter;
+	Y2= r*sin(acos(k))+ycenter;
 
-  for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
-    X = xcenter + rad*cos(theta);
-    Y = ycenter + rad*sin(theta);
-    E+=0.05;
-    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
+	if(k>-1 && k<1){
+	
+	  if(nbpassage%2==0){
+	    norm = sqrt((X - X_a)*(X - X_a) + (Y1 - Y_a)*(Y1 - Y_a));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y1,Z,E);
+	    norm = sqrt((Y2 - Y1)*(Y2 - Y1));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y2,Z,E);
+	    Y_a = Y2;
+	  }
+	  else{
+	    norm = sqrt((X - X_a)*(X - X_a) + (Y2 - Y_a)*(Y2 - Y_a));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y2,Z,E);
+	    norm = sqrt((Y1 - Y2)*(Y1 - Y2));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y1,Z,E);
+	    Y_a = Y1;
+	  }
+	}
+	nbpassage+=1;
+      }
+    }
+    else{
+      float X1,X2;
+      X-=r;
+      Y+=r;
+      X_a = X;
+      Y_a = Y;
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
+      for(float nb = 0.0; nb<(r*2); nb+=0.8){
+	Y_a=Y;
+	Y-=0.8;
+	float k=(Y-ycenter)/r;
+	X1=-r*cos(asin(k))+xcenter;
+	X2= r*cos(asin(k))+xcenter;
+
+	if(k>-1 && k<1){
+	
+	  if(nbpassage%2==0){
+	    norm = sqrt((Y - Y_a)*(Y - Y_a) + (X1 - X_a)*(X1 - X_a));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X1,Y,Z,E);
+	    norm = sqrt((X2 - X1)*(X2 - X1));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X2,Y,Z,E);
+	    X_a = X2;
+	  }
+	  else{
+	    norm = sqrt((Y - Y_a)*(Y - Y_a) + (X2 - X_a)*(X2 - X_a));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X2,Y,Z,E);
+	    norm = sqrt((X1 - X2)*(X1 - X2));
+	    E += (compute_e(norm));
+	    fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X1,Y,Z,E);
+	    X_a = X1;
+	  }
+	}
+	nbpassage+=1;
+      }
+    }
+    sens+=1;
   }
   
   footer(file,Z);
@@ -266,5 +384,7 @@ int main( int argc, char** argv )
   cubeN();
   cubeY();
   cylinderVide();
-  return cylinderPlein();
+  cylinderPlein();
+  hemisphereVide();
+  return 0;
 }
