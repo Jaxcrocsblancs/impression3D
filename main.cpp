@@ -79,88 +79,110 @@ int sparse_cube(){
   }
   header(file);
 
-  // première diagonale
-  float X0 = 100.0, Y0 = 100.0;
-  int cote = 36;
-  float Xn = X0 - cote, Yn = Y0 + cote;
   float Z = 0.2;
   float E = 0;
-  fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X0 ,Y0 ,Z);
+  int cote = 36;
+  int delta_e = 4;
+
+  for(; Z <= 36; Z+= 0.2){
+    // première diagonale
+    float X0 = 100.0, Y0 = 100.0;
+    float Xn = X0 - cote, Yn = Y0 + cote;
+
+    fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X0 ,Y0 ,Z);
  
-  float diag = cote * sqrt(2);
-  int delta_e = 4;  
-  int n = floor(diag / delta_e); 
+    float diag = cote * sqrt(2);  
+    int n = floor(diag / delta_e); 
 
-  int i;
-  for(i = 0; i <= (int)n/2; i++){
-    std::cout << "i :" << i << std::endl;
-    float l = sqrt(2) * delta_e * i;
-    std::cout << "l :" << l << std::endl;
-    E += compute_e(sqrt(2) * l);
+    int i;
+    for(i = 0; i <= (int)n/2; i++){
+      std::cout << "i :" << i << std::endl;
+      float l = sqrt(2) * delta_e * i;
+      std::cout << "l :" << l << std::endl;
+      E += compute_e(sqrt(2) * l);
 
-    float X_haut = X0, X_bas = X0 - l, Y_haut = Y0 + l, Y_bas = Y0;
+      float X_haut = X0, X_bas = X0 - l, Y_haut = Y0 + l, Y_bas = Y0;
 
-    if(i % 2 == 0){
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
-    }else{
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
-    }     
-  }
-
-  for(; i < n; i++){
-    std::cout << "i : " << i << std::endl;
-    float l = sqrt(2) * (diag - (delta_e * i));
-    std::cout << "l :" << l << std::endl;
-    E += compute_e(sqrt(2) * l);
-    
-    float X_haut = Xn + l, X_bas = Xn, Y_haut = Yn, Y_bas = Yn - l; 
-      
-    if(i % 2 == 0){
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
-    }else{
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      if(i % 2 == 0){
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+      }else{
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      }     
     }
-  }
 
-  // deuxième diagonale
-  float X0_2 = X0 - cote, Y0_2 = Y0;
-  float Xn_2 = X0_2 + cote, Yn_2 = Y0_2 + cote;
-  
-  for(i = 0; i <= (int)n/2; i++){
-    std::cout << "i :" << i << std::endl;
-    float l = sqrt(2) * delta_e * i;
-    std::cout << "l :" << l << std::endl;
-    E += compute_e(sqrt(2) * l);
-
-    float X_haut = X0_2, X_bas = X0_2 + l, Y_haut = Y0_2 + l, Y_bas = Y0_2;
-
-    if(i % 2 == 0){
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
-    }else{
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
-    }     
-  }
-
-  for(; i < n; i++){
-    std::cout << "i : " << i << std::endl;
-    float l = sqrt(2) * (diag - (delta_e * i));
-    std::cout << "l :" << l << std::endl;
-    E += compute_e(sqrt(2) * l);
+    for(; i < n; i++){
+      std::cout << "i : " << i << std::endl;
+      float l = sqrt(2) * (diag - (delta_e * i));
+      std::cout << "l :" << l << std::endl;
+      E += compute_e(sqrt(2) * l);
     
-    float X_haut = Xn_2 - l, X_bas = Xn_2, Y_haut = Yn_2, Y_bas = Yn_2 - l; 
+      float X_haut = Xn + l, X_bas = Xn, Y_haut = Yn, Y_bas = Yn - l; 
       
-    if(i % 2 == 0){
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
-    }else{
-      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
-      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      if(i % 2 == 0){
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+      }else{
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      }
+    }
+
+    // deuxième diagonale
+    float X0_2 = X0 - cote, Y0_2 = Y0;
+    float Xn_2 = X0_2 + cote, Yn_2 = Y0_2 + cote;
+  
+    for(i = 0; i <= (int)n/2; i++){
+      std::cout << "i :" << i << std::endl;
+      float l = sqrt(2) * delta_e * i;
+      std::cout << "l :" << l << std::endl;
+      E += compute_e(sqrt(2) * l);
+
+      float X_haut = X0_2, X_bas = X0_2 + l, Y_haut = Y0_2 + l, Y_bas = Y0_2;
+
+      if(i % 2 == 0){
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+      }else{
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      }     
+    }
+
+    for(; i < n; i++){
+      std::cout << "i : " << i << std::endl;
+      float l = sqrt(2) * (diag - (delta_e * i));
+      std::cout << "l :" << l << std::endl;
+      E += compute_e(sqrt(2) * l);
+    
+      float X_haut = Xn_2 - l, X_bas = Xn_2, Y_haut = Yn_2, Y_bas = Yn_2 - l; 
+      
+      if(i % 2 == 0){
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+      }else{
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+      }
+    }
+
+    // troisième ligne
+    n = floor(cote / delta_e);
+    float X_0 = X0, X_1 = X0_2, Y = Y0;
+
+    for(i = 0; i <= n; i++){
+      E += compute_e(cote);
+
+      if(i % 2 == 0){
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_0, Y, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_1 ,Y, Z, E);
+      }else{
+	fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_1 , Y, Z);
+	fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_0 ,Y, Z, E);
+      }
+
+      Y += delta_e;
     }
   }
 
