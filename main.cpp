@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 #include <math.h>
 
 void header(FILE* file){
@@ -19,11 +20,11 @@ void header(FILE* file){
 
 float compute_e(float length, float tau = 0.2,float nw = 0.4, float d = 1.75){
 
-return(tau * nw * length /(M_PI * (d*d)/4));
+  return(tau * nw * length /(M_PI * (d*d)/4));
 }
 
 void footer(FILE* file, float z){
-    fprintf(file, "G1 X0.0 Y200.0 Z%.2f F1200\n", (z+20.0)); 
+  fprintf(file, "G1 X0.0 Y200.0 Z%.2f F1200\n", (z+20.0)); 
 }
 
 int cubeN(){
@@ -63,6 +64,67 @@ int cubeN(){
       fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f \n", X,Y,Z,E);
     }
   }
+  footer(file,Z);
+  fclose(file);
+  return 0;
+}
+
+int sparse_cube(){
+  FILE* file = NULL;
+  file = fopen("sparse_cube.gcode", "w+");
+  if (file == NULL){
+    // On affiche un message d'erreur si on veut
+    printf("Impossible d'ouvrir le fichier");
+    return 1;
+  }
+  header(file);
+
+  float X0 = 100.0, Y0 = 100.0;
+  int cote = 36;
+  float Xn = X0 - cote, Yn = Y0 + cote;
+  float Z = 0.2;
+  float E = 0;
+  fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X0 ,Y0 ,Z);
+ 
+  float diag = cote * sqrt(2);
+  int delta_e = 4;  
+  int n = floor(diag / delta_e); 
+
+  int i;
+  for(i = 0; i <= (int)n/2; i++){
+    std::cout << "i :" << i << std::endl;
+    float l = sqrt(2) * delta_e * i;
+    std::cout << "l :" << l << std::endl;
+    E += compute_e(sqrt(2) * l);
+
+    float X_haut = X0, X_bas = X0 - l, Y_haut = Y0 + l, Y_bas = Y0;
+
+    if(i % 2 == 0){
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+    }else{
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+    }     
+  }
+
+  for(; i < n; i++){
+    std::cout << "i : " << i << std::endl;
+    float l = sqrt(2) * (diag - (delta_e * i));
+    std::cout << "l :" << l << std::endl;
+    E += compute_e(sqrt(2) * l);
+    
+    float X_haut = Xn + l, X_bas = Xn, Y_haut = Yn, Y_bas = Yn - l; 
+      
+    if(i % 2 == 0){
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+    }else{
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+    }
+  }
+
   footer(file,Z);
   fclose(file);
   return 0;
@@ -127,7 +189,7 @@ int cubeY(){
     }
     
   }
-   footer(file,Z);
+  footer(file,Z);
   fclose(file);
   return 0;
 }
@@ -165,7 +227,7 @@ int cylinderVide(){
       fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
     }
   }
-   footer(file,Z);
+  footer(file,Z);
   fclose(file);
   return 0;
 }
@@ -214,7 +276,7 @@ int cylinderPlein(){
 	  norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
 	  E += (compute_e(norm));
 	  X_a = X;
-		Y_a = Y;
+	  Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
@@ -228,17 +290,17 @@ int cylinderPlein(){
 	X = xcenter + radius*cos(0);
 	Y = ycenter + radius*sin(0);
 	fprintf(file, "G1 X%.2f Y%.2f Z%.2f F1200\n", X,Y,Z);
-  float X_a = X;
+	float X_a = X;
 	float Y_a = Y;
 	float norm = 0;
 	for(double theta=0.0; theta<6.27; theta+=1.0/radius) {
 	  X = xcenter + radius*cos(theta);
 	  Y = ycenter + radius*sin(theta);
 	  //E+=0.05;
-		norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
+	  norm = sqrt((X - X_a)*(X - X_a) + (Y - Y_a)*(Y - Y_a));
 	  E += (compute_e(norm));
 	  X_a = X;
-		Y_a = Y;
+	  Y_a = Y;
 	  fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X,Y,Z,E);
 	}
       }
@@ -386,5 +448,6 @@ int main( int argc, char** argv )
   cylinderVide();
   cylinderPlein();
   hemisphereVide();
+  sparse_cube();
   return 0;
 }
