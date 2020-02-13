@@ -79,6 +79,7 @@ int sparse_cube(){
   }
   header(file);
 
+  // première diagonale
   float X0 = 100.0, Y0 = 100.0;
   int cote = 36;
   float Xn = X0 - cote, Yn = Y0 + cote;
@@ -115,6 +116,44 @@ int sparse_cube(){
     E += compute_e(sqrt(2) * l);
     
     float X_haut = Xn + l, X_bas = Xn, Y_haut = Yn, Y_bas = Yn - l; 
+      
+    if(i % 2 == 0){
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+    }else{
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+    }
+  }
+
+  // deuxième diagonale
+  float X0_2 = X0 - cote, Y0_2 = Y0;
+  float Xn_2 = X0_2 + cote, Yn_2 = Y0_2 + cote;
+  
+  for(i = 0; i <= (int)n/2; i++){
+    std::cout << "i :" << i << std::endl;
+    float l = sqrt(2) * delta_e * i;
+    std::cout << "l :" << l << std::endl;
+    E += compute_e(sqrt(2) * l);
+
+    float X_haut = X0_2, X_bas = X0_2 + l, Y_haut = Y0_2 + l, Y_bas = Y0_2;
+
+    if(i % 2 == 0){
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_bas ,Y_bas, Z, E);
+    }else{
+      fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_bas ,Y_bas, Z);
+      fprintf(file, "G1 X%.2f Y%.2f Z%.2f E%.2f F1200\n", X_haut ,Y_haut, Z, E);
+    }     
+  }
+
+  for(; i < n; i++){
+    std::cout << "i : " << i << std::endl;
+    float l = sqrt(2) * (diag - (delta_e * i));
+    std::cout << "l :" << l << std::endl;
+    E += compute_e(sqrt(2) * l);
+    
+    float X_haut = Xn_2 - l, X_bas = Xn_2, Y_haut = Yn_2, Y_bas = Yn_2 - l; 
       
     if(i % 2 == 0){
       fprintf(file, "G0 X%.2f Y%.2f Z%.2f F1200\n", X_haut ,Y_haut, Z);
